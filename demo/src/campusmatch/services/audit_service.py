@@ -1,6 +1,18 @@
 import re
 
-from campusmatch.contracts import AuditIssue, AuditResult, CoachingResult, Profile
+from campusmatch.contracts import (
+    AuditIssue,
+    AuditResult,
+    CoachingResult,
+    MatchResult,
+    Profile,
+)
+
+
+PRIVATE_PATTERN = re.compile(
+    r"1[3-9]\d{9}|(?<!\d)\d{17}[\dXx](?!\d)|"
+    r"[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}"
+)
 
 
 def issue(code: str, message: str, action: str) -> AuditIssue:
@@ -9,6 +21,7 @@ def issue(code: str, message: str, action: str) -> AuditIssue:
 
 def audit_coaching(
     profile: Profile,
+    match: MatchResult,
     coaching: CoachingResult,
     *,
     task_id: str,
@@ -18,6 +31,35 @@ def audit_coaching(
 ) -> AuditResult:
     issues: list[AuditIssue] = []
     evidence = {item.evidence_id: item for item in profile.evidence}
+
+    private_evidence = [
+        item.evidence_id
+        for item in profile.evidence
+        if PRIVATE_PATTERN.search(item.quote)
+    ]
+    if private_evidence:
+        issues.append(
+            issue(
+                "PRIVACY_IN_SOURCE",
+                f"原始证据中包含需脱敏的联系方式或身份信息：{', '.join(private_evidence)}。",
+                "请在共享与导出前遮盖敏感字段，并重新确认脱敏后的原文。",
+            )
+        )
+
+    unsafe_policy_items = [
+        item.requirement_id
+        for item in match.items
+        if item.category == "POLICY_RISK"
+        and (item.counted or item.weight != 0 or item.state != "POLICY_EXCLUDED")
+    ]
+    if unsafe_policy_items:
+        issues.append(
+            issue(
+                "POLICY_RISK_SCORED",
+                f"风险条件被错误计入匹配：{', '.join(unsafe_policy_items)}。",
+                "从评分中移除风险条件，并交由人工进行公平性核查。",
+            )
+        )
 
     if not consent_granted:
         issues.append(
@@ -68,10 +110,7 @@ def audit_coaching(
                 )
             )
 
-        if re.search(
-            r"1[3-9]\d{9}|\b\d{17}[\dXx]\b|[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}",
-            suggestion.suggestion,
-        ):
+        if PRIVATE_PATTERN.search(suggestion.suggestion):
             issues.append(
                 issue(
                     "PRIVACY_LEAK",

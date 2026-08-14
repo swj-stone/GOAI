@@ -46,3 +46,18 @@ def test_normalize_markdown_keeps_stable_line_boundaries() -> None:
     normalized = normalize_markdown("# 标题  \r\n\r\n内容\t\r\n")
 
     assert normalized == "# 标题\n\n内容"
+
+
+def test_general_material_gets_dynamic_grounded_evidence() -> None:
+    material = "# 项目经历\n协调团队完成活动，并使用 Excel 整理报名名单。"
+
+    profile = extract_profile(material, user_id="U100", source_id="upload-resume")
+
+    assert profile.evidence
+    assert {item.label for item in profile.competencies} >= {
+        "沟通表达",
+        "办公与信息处理",
+        "活动执行与协作",
+    }
+    for evidence in profile.evidence:
+        assert evidence.quote in material

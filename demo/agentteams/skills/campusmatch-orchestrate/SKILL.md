@@ -15,7 +15,7 @@ assign_when: The Worker is the CampusMatch Team Leader coordinating the complete
 5. Run Audit after every coaching revision.
 6. Export only when Audit returns `PASS` and the human approves.
 
-Use `mcporter call campusmatch.get_task_status task_id=<TASK_ID>` to inspect shared state. Retry the same idempotency key at most twice for a temporary tool failure. On missing input, ask one clear user question. On a contract error or repeated failure, stop and request human review.
+Use `timeout 15s mcporter call mcp-campusmatch.get_task_status task_id:<TASK_ID>` to inspect shared state. The timeout wrapper is required because mcporter 0.9.0 can retain its HTTP connection after printing a completed result. Retry the same idempotency key at most twice for a temporary tool failure. On missing input, ask one clear user question. On a contract error or repeated failure, stop and request human review.
 
 ## User-facing contract
 

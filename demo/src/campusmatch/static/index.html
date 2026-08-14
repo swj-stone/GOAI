@@ -3,17 +3,168 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="description" content="CampusMatch：证据可追溯、结果可解释、导出可审计的高校求职辅助 Demo。" />
     <title>CampusMatch｜让每条求职建议都有依据</title>
     <link rel="stylesheet" href="/static/app.css" />
   </head>
   <body>
-    <main>
-      <p class="eyebrow">高校可信求职协同基座</p>
-      <h1>CampusMatch</h1>
-      <p class="lead">把课程、社团和志愿经历整理成可以核对的求职证据。</p>
-      <button id="run-demo" type="button">使用演示案例</button>
-      <section id="result" aria-live="polite"></section>
+    <header class="topbar">
+      <a class="brand" href="#top" aria-label="返回 CampusMatch 首页">
+        <span class="brand-mark" aria-hidden="true">CM</span>
+        <span>CampusMatch</span>
+      </a>
+      <span class="service-status"><i></i> 本地隐私模式</span>
+    </header>
+
+    <main id="top">
+      <section class="hero shell">
+        <div class="hero-copy">
+          <p class="eyebrow">高校可信求职协同基座 · AgentTeams</p>
+          <h1>把“我做过什么”，变成<br /><em>可核对的求职证据</em></h1>
+          <p class="lead">从课程、社团和志愿经历提取能力，对照真实岗位要求，给出能解释、能追溯、不过度包装的求职建议。</p>
+          <div class="hero-actions">
+            <button id="run-demo" class="button primary" type="button">使用演示案例</button>
+            <a class="button secondary" href="#workspace">使用自己的材料</a>
+          </div>
+          <p class="no-code">无需安装 Python · 无需配置密钥 · 支持 MD / TXT / DOCX / PDF</p>
+        </div>
+        <aside class="trust-card" aria-label="系统原则">
+          <p class="mini-label">不是一个黑盒打分器</p>
+          <ol class="principles">
+            <li><span>01</span><div><strong>每项能力有原文</strong><small>证据带行号，可回到材料核对</small></div></li>
+            <li><span>02</span><div><strong>分数必须能解释</strong><small>符合、部分符合、缺少证据逐项呈现</small></div></li>
+            <li><span>03</span><div><strong>审计通过才导出</strong><small>隐私、歧视、幻觉与人工审批共同把关</small></div></li>
+          </ol>
+        </aside>
+      </section>
+
+      <section class="flow-strip" aria-label="工作流程">
+        <div class="shell flow-grid">
+          <span><b>1</b>材料转 Markdown</span>
+          <span><b>2</b>能力与岗位解析</span>
+          <span><b>3</b>证据化匹配建议</span>
+          <span><b>4</b>审计与人工确认</span>
+        </div>
+      </section>
+
+      <section id="workspace" class="workspace shell">
+        <div class="section-heading">
+          <div>
+            <p class="eyebrow">现在开始</p>
+            <h2>求职 / 跳槽 / 了解岗位，一套流程完成</h2>
+          </div>
+          <p>不知道怎么写也没关系。先放入已有材料，系统只基于你提供的事实工作。</p>
+        </div>
+
+        <form id="analysis-form" class="input-panel">
+          <div class="form-row mode-row">
+            <label for="career-mode">你的目标</label>
+            <select id="career-mode" name="mode">
+              <option value="job_search">在校求职 / 实习</option>
+              <option value="career_change">跳槽 / 转岗</option>
+              <option value="explore">单纯了解岗位</option>
+            </select>
+          </div>
+
+          <div class="input-grid">
+            <article class="input-card">
+              <div class="card-heading">
+                <div><span class="step-tag">01</span><h3>你的经历材料</h3></div>
+                <label class="file-button" for="material-file">上传文件</label>
+                <input id="material-file" type="file" accept=".md,.txt,.docx,.pdf" />
+              </div>
+              <p class="field-help">简历不是必需品；课程作业、社团、志愿经历都可以。</p>
+              <textarea id="material-markdown" rows="14" placeholder="# 课程经历&#10;- 我负责……&#10;&#10;# 社团 / 志愿经历&#10;- 我协助……"></textarea>
+              <p id="material-status" class="file-status">上传后自动转为 Markdown，你和 AI 看到同一份文本。</p>
+            </article>
+
+            <article class="input-card">
+              <div class="card-heading">
+                <div><span class="step-tag">02</span><h3>目标岗位 JD</h3></div>
+                <label class="file-button" for="job-file">上传文件</label>
+                <input id="job-file" type="file" accept=".md,.txt,.docx,.pdf" />
+              </div>
+              <p class="field-help">粘贴岗位职责和任职要求；模糊或敏感条件会单独标记。</p>
+              <textarea id="job-markdown" rows="14" placeholder="# 岗位名称&#10;## 岗位要求&#10;- 沟通表达清晰&#10;- 能使用 Excel……"></textarea>
+              <p id="job-status" class="file-status">支持从招聘网站复制，也可以上传文件。</p>
+            </article>
+          </div>
+
+          <div class="consent-row">
+            <label class="check-label"><input id="consent" type="checkbox" /> <span>我确认有权使用这些材料，并同意仅为本次分析处理。</span></label>
+            <button id="analyze" class="button primary" type="submit">开始证据化分析 <span aria-hidden="true">→</span></button>
+          </div>
+          <p class="privacy-note">当前 Demo 在本机内存中处理，不把上传原文写入项目文件；刷新服务后任务记录即清空。</p>
+          <div id="form-message" class="message" role="alert" hidden></div>
+        </form>
+      </section>
+
+      <section id="result" class="results shell" aria-live="polite" hidden>
+        <div id="result-status" class="result-status"></div>
+
+        <div class="score-layout">
+          <article class="score-card">
+            <div id="match-ring" class="score-ring" aria-label="证据匹配度"><span id="match-score">0</span><small>/ 100</small></div>
+            <div><p class="mini-label">证据匹配度</p><h3>材料与岗位要求对得上多少</h3><p>不是录用概率；只计算当前可核对的证据。</p></div>
+          </article>
+          <article class="score-card">
+            <div id="coverage-ring" class="score-ring coverage" aria-label="材料覆盖度"><span id="coverage-score">0</span><small>%</small></div>
+            <div><p class="mini-label">材料覆盖度</p><h3>多少岗位要求已有材料支撑</h3><p>缺少证据不等于缺少能力，可以继续补充。</p></div>
+          </article>
+          <article class="radar-card">
+            <div><p class="mini-label">能力五维图</p><h3>匹配结构一眼可见</h3></div>
+            <div id="radar-chart" class="radar" aria-label="岗位能力雷达图"></div>
+          </article>
+        </div>
+
+        <div class="result-grid">
+          <article class="result-panel">
+            <div class="panel-title"><span>Profile Agent</span><h3>能力与原文证据</h3></div>
+            <div id="profile-results"></div>
+          </article>
+          <article class="result-panel">
+            <div class="panel-title"><span>Job + Match Agent</span><h3>岗位要求逐项解释</h3></div>
+            <div id="match-results"></div>
+          </article>
+        </div>
+
+        <article class="result-panel coach-panel">
+          <div class="panel-title"><span>Coach Agent</span><h3>基于事实的下一步建议</h3></div>
+          <div id="coach-results" class="coach-grid"></div>
+        </article>
+
+        <div class="result-grid audit-grid">
+          <article class="result-panel">
+            <div class="panel-title"><span>Audit Agent</span><h3>安全与可信审计</h3></div>
+            <div id="audit-results"></div>
+          </article>
+          <article class="result-panel">
+            <div class="panel-title"><span>AgentTeams</span><h3>可核查执行记录</h3></div>
+            <ol id="trace-results" class="trace-list"></ol>
+          </article>
+        </div>
+
+        <article class="approval-panel">
+          <div>
+            <p class="mini-label">最后一道闸门</p>
+            <h3>人工确认后导出</h3>
+            <p>请检查原文引用、职责边界和敏感信息。AI 不能替你确认事实。</p>
+          </div>
+          <div class="approval-actions">
+            <label class="check-label"><input id="human-approval" type="checkbox" /> <span>我已核对并确认最终内容</span></label>
+            <button id="approve" class="button primary" type="button">提交审计</button>
+            <a id="export-report" class="button success disabled" href="#" aria-disabled="true">导出 Markdown 报告</a>
+          </div>
+        </article>
+
+        <details class="source-preview">
+          <summary>查看 Agent 实际读取的 Markdown 原文</summary>
+          <div class="source-grid"><pre id="material-preview"></pre><pre id="job-preview"></pre></div>
+        </details>
+      </section>
     </main>
+
+    <footer><div class="shell"><strong>CampusMatch</strong><span>证据优先 · 人工负责 · 公平可审计</span><span>比赛 Demo · 非招聘决策工具</span></div></footer>
     <script src="/static/app.js" defer></script>
   </body>
 </html>

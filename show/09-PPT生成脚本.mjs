@@ -321,7 +321,7 @@ async function build() {
     const panels = [
       ["01 原始文件", "只读保留\nSHA-256 哈希\n访问授权", C.panel, C.ink],
       ["02 行号化 Markdown", "学生与 AI 共览\n段落 / 区块锚点\n可人工纠正", C.pale, C.blue],
-      ["03 证据 JSON", "claim + evidence_id\nsource_quote\nconfidence + confirmed", C.violetPale, C.violet],
+      ["03 证据 JSON", "claim + evidence_id\nsource_quote\nstrength + confirmed", C.violetPale, C.violet],
     ];
     panels.forEach((p, i) => {
       const x = 52 + i * 390;
@@ -331,7 +331,7 @@ async function build() {
       if (i < 2) addText(s, `ev-arrow-${i}`, "→", x + 345, 252, 40, 42, { size: 25, color: C.faint, bold: true, align: "center" });
     });
     addText(s, "ev-example-label", "证据对象（合成示例）", 52, 414, 220, 28, { size: 14, bold: true, color: C.faint, insets: { top: 0, right: 0, bottom: 0, left: 0 } });
-    addText(s, "ev-code", "claim: 具备 Python 项目经验\nevidence: resume:block-12\nsource: “使用 Python 完成校园数据分析项目”\nconfidence: 0.91    confirmed: true", 52, 451, 745, 170, { geometry: "roundRect", fill: C.ink, lineFill: C.ink, radius: "rounded-xl", size: 18, color: "#E8EEF6", font: "Consolas", insets: { top: 18, right: 22, bottom: 18, left: 22 } });
+    addText(s, "ev-code", "claim: 具备办公与信息处理经验\nevidence: E-S001-003\nsource: “我使用 Excel 维护活动报名名单，核对参与者信息。”\nstrength: direct    confirmed: true", 52, 451, 745, 170, { geometry: "roundRect", fill: C.ink, lineFill: C.ink, radius: "rounded-xl", size: 18, color: "#E8EEF6", font: "Consolas", insets: { top: 18, right: 22, bottom: 18, left: 22 } });
     addPanel(s, "ev-rule", 835, 451, 357, 170, C.greenPale, C.greenPale);
     addText(s, "ev-rule-title", "可导出条件", 863, 472, 300, 34, { size: 20, bold: true, color: C.green, align: "center" });
     addText(s, "ev-rule-body", "重要结论有 evidence_id\n原文可定位\n确认状态明确\nAudit 检查通过", 871, 518, 284, 83, { size: 17, color: C.ink, bold: true, align: "center", valign: "middle" });
@@ -345,17 +345,17 @@ async function build() {
 
   // 09 match visualization
   {
-    const s = deck.slides.add(); s.background.fill = C.bg; addHeader(s, 9, "匹配度与证据置信度分开展示");
+    const s = deck.slides.add(); s.background.fill = C.bg; addHeader(s, 9, "匹配度与证据覆盖度分开展示");
     // left: ring
     addPanel(s, "score-panel", 52, 160, 285, 458, "#FAFAFB", C.line);
     addText(s, "score-title", "岗位匹配度", 78, 181, 233, 35, { size: 19, bold: true, align: "center" });
     addShape(s, "score-outer", "ellipse", 96, 238, 196, 196, C.blue, C.blue, 0);
     addShape(s, "score-inner", "ellipse", 129, 271, 130, 130, "#FFFFFF", "#FFFFFF", 0);
-    addText(s, "score-num", "76", 137, 296, 114, 60, { size: 44, bold: true, color: C.navy, align: "center", valign: "middle" });
+    addText(s, "score-num", "77", 137, 296, 114, 60, { size: 44, bold: true, color: C.navy, align: "center", valign: "middle" });
     addText(s, "score-unit", "/ 100", 156, 354, 75, 24, { size: 14, bold: true, color: C.faint, align: "center" });
-    addText(s, "confidence-label", "证据置信度 82%", 78, 469, 233, 28, { size: 16, bold: true, color: C.ink, align: "center" });
+    addText(s, "confidence-label", "证据覆盖度 85%", 78, 469, 233, 28, { size: 16, bold: true, color: C.ink, align: "center" });
     addShape(s, "conf-bg", "roundRect", 86, 513, 217, 13, C.line, C.line, 0, "rounded-xl");
-    addShape(s, "conf-fill", "roundRect", 86, 513, 178, 13, C.green, C.green, 0, "rounded-xl");
+    addShape(s, "conf-fill", "roundRect", 86, 513, 184, 13, C.green, C.green, 0, "rounded-xl");
     addText(s, "score-note", "匹配 ≠ 录用概率", 91, 550, 207, 30, { size: 15, bold: true, color: C.red, align: "center" });
     // middle radar
     addPanel(s, "radar-panel", 360, 160, 405, 458, "#FFFFFF", C.line);
@@ -372,10 +372,10 @@ async function build() {
     addPanel(s, "matrix-panel", 788, 160, 404, 458, "#FAFAFB", C.line);
     addText(s, "matrix-title", "要求证据矩阵", 816, 181, 348, 34, { size: 19, bold: true, align: "center" });
     const reqs = [
-      ["Python 项目", "符合", C.greenPale, C.green],
-      ["SQL 实践", "部分符合", C.amberPale, C.amber],
-      ["云部署", "缺少证据", C.panel, C.muted],
-      ["限男性", "风险排除", C.redPale, C.red],
+      ["Excel 信息整理", "符合", C.greenPale, C.green],
+      ["基础文档写作", "部分符合", C.amberPale, C.amber],
+      ["内容发布经验", "缺少证据", C.panel, C.muted],
+      ["女性优先", "风险排除", C.redPale, C.red],
     ];
     reqs.forEach((r, i) => {
       const y = 238 + i * 72;
@@ -386,7 +386,7 @@ async function build() {
     addText(s, "state-legend", "状态：符合 / 部分符合 / 缺证 / 冲突 / 风险排除", 815, 548, 350, 44, { size: 13, color: C.muted, align: "center", valign: "middle" });
     addText(s, "synthetic-note", "合成演示数据，不代表录用概率", 52, 637, 1140, 22, { size: 13, bold: true, color: C.red, align: "center", insets: { top: 0, right: 0, bottom: 0, left: 0 } });
     addFooter(s, 9, "复杂任务多 Agent 自主协同｜合成演示数据");
-    setNotes(s, "Match Agent 不只给一个分数。它把匹配度和证据置信度分开，并逐项标出符合、部分符合、缺少证据、冲突和风险排除。页面数据为合成演示，只展示交互与解释方式。", ["All numbers on this slide are synthetic demonstration data created for the CampusMatch prototype."]);
+    setNotes(s, "本页使用当前可执行合成案例：岗位匹配度 77、证据覆盖度 85。逐项状态来自真实 Demo 输出；“女性优先”被标记为 POLICY_EXCLUDED，不参与评分。匹配分不代表录用概率，缺少证据不等于缺少能力。", ["Internal verification: show/19-Demo实机验收记录.md"]);
   }
 
   // 10 audit gates
@@ -460,25 +460,25 @@ async function build() {
     addPanel(s, "demo-exception", 52, 364, 1140, 151, "#FAFAFB", C.line);
     addText(s, "demo-ex-title", "固定异常：建议中出现材料未支持的“提升 30%”", 81, 386, 540, 42, { size: 22, bold: true, color: C.red });
     addText(s, "demo-ex-body", "Audit → BLOCK → 回传 evidence_gap → Coach 删除无证据数字 → 用户确认 → PASS", 81, 445, 1040, 40, { size: 18, bold: true, color: C.ink, align: "center" });
-    addText(s, "offline", "离线确定性模式", 110, 556, 255, 62, { geometry: "roundRect", fill: C.navy, lineFill: C.navy, radius: "rounded-xl", size: 19, bold: true, color: "#FFFFFF", align: "center", valign: "middle" });
-    addText(s, "offline-desc", "保证评审现场可复现", 381, 566, 235, 40, { size: 16, color: C.muted, bold: true, valign: "middle" });
-    addText(s, "online", "在线 AgentTeams 模式", 680, 556, 272, 62, { geometry: "roundRect", fill: C.pale, lineFill: C.blue, lineWidth: 2, radius: "rounded-xl", size: 19, bold: true, color: C.blue, align: "center", valign: "middle" });
-    addText(s, "online-desc", "展示真实协作、重试与追踪", 968, 566, 224, 40, { size: 16, color: C.muted, bold: true, valign: "middle" });
-    addFooter(s, 12);
-    setNotes(s, "Demo 不是只走成功路径。我们用合成简历和岗位先生成画像与匹配，再故意让 Coach 产生一个无证据数字，Audit 必须阻断；修复并确认后才导出。离线模式保证复现，在线模式展示真实协同。");
+    addText(s, "offline", "浏览器确定性链路", 110, 556, 255, 62, { geometry: "roundRect", fill: C.navy, lineFill: C.navy, radius: "rounded-xl", size: 19, bold: true, color: "#FFFFFF", align: "center", valign: "middle" });
+    addText(s, "offline-desc", "50 项测试，77 / 85 可复现", 381, 566, 235, 40, { size: 16, color: C.muted, bold: true, valign: "middle" });
+    addText(s, "online", "HiClaw Team 实机链路", 680, 556, 272, 62, { geometry: "roundRect", fill: C.pale, lineFill: C.blue, lineWidth: 2, radius: "rounded-xl", size: 19, bold: true, color: C.blue, align: "center", valign: "middle" });
+    addText(s, "online-desc", "6 Worker，5 阶段，状态 READY", 968, 566, 224, 40, { size: 16, color: C.muted, bold: true, valign: "middle" });
+    addFooter(s, 12, "复杂任务多 Agent 自主协同｜本地 MVP 实测");
+    setNotes(s, "两条演示路径均已验证：浏览器确定性链路便于非技术评委复现；HiClaw Team 链路由 Career Navigator 委派 Profile、Job、Match、Coach、Audit 五阶段执行。Audit 在未人工批准时返回 BLOCK + APPROVAL_REQUIRED，证明人工门没有被绕过。", ["Internal verification: demo/README.md", "Internal verification: show/19-Demo实机验收记录.md"]);
   }
 
-  // 13 targets
+  // 13 verified local MVP evidence
   {
-    const s = deck.slides.add(); s.background.fill = C.bg; addHeader(s, 13, "用固定数据集验证可靠性，而不是只录成功视频");
-    addPill(s, "target-disclaimer", "复赛验收目标｜尚未实测", 52, 151, 270, C.redPale, C.red, 14);
+    const s = deck.slides.add(); s.background.fill = C.bg; addHeader(s, 13, "固定数据 + 实机链路：当前可复现证据");
+    addPill(s, "target-disclaimer", "本地 MVP 实测｜2026-08-14", 52, 151, 270, C.redPale, C.red, 14);
     const metrics = [
-      ["100%", "重要结论证据覆盖率", C.blue],
-      ["0%", "虚构经历放行率", C.red],
-      ["0%", "歧视条件进入评分率", C.red],
-      ["≥90%", "完整任务成功率", C.green],
-      ["≥95%", "Tool 调用成功率", C.green],
-      ["100%", "导出审批覆盖率", C.blue],
+      ["50", "自动化测试全部通过", C.blue],
+      ["0", "浏览器控制台错误", C.red],
+      ["0", "歧视条件进入评分", C.red],
+      ["6 / 6", "Worker MCP 健康", C.green],
+      ["5 / 5", "Team 专业阶段完成", C.green],
+      ["READY", "最终业务状态", C.blue],
     ];
     metrics.forEach((m, i) => {
       const x = 52 + (i % 3) * 386, y = 208 + Math.floor(i / 3) * 190;
@@ -486,9 +486,9 @@ async function build() {
       addText(s, `metric-num-${i}`, m[0], x + 22, y + 20, 316, 67, { size: 40, bold: true, color: m[2], align: "center", valign: "middle" });
       addText(s, `metric-label-${i}`, m[1], x + 24, y + 96, 312, 37, { size: 17, bold: true, color: C.ink, align: "center", valign: "middle" });
     });
-    addText(s, "metric-method", "固定合成数据集 + 正常用例 + 缺证用例 + 工具失败用例 + 歧视条件用例 + 危机信号用例", 52, 610, 1140, 40, { size: 17, bold: true, color: C.navy, align: "center" });
-    addFooter(s, 13, "复杂任务多 Agent 自主协同｜目标值，尚未实测");
-    setNotes(s, "本页全部是复赛实现后的验收目标，不是已经取得的成绩。我们会用固定合成数据集跑正常、缺证、工具失败、歧视条件和危机信号用例，并保存 Trace 和审核结果。");
+    addText(s, "metric-method", "浏览器桌面/移动端 + API + MCP + Worker Skills + Team Room + 共享结果", 52, 610, 1140, 40, { size: 17, bold: true, color: C.navy, align: "center" });
+    addFooter(s, 13, "复杂任务多 Agent 自主协同｜实机记录见 show/19");
+    setNotes(s, "本页只列 2026-08-14 本地实测：50 项自动化测试通过；浏览器控制台 0 错误；风险性别条件 0 次进入评分；六个 Worker MCP 全部健康；真实 Team 的五个专业阶段全部完成；最终业务状态 READY。77/85 是合成案例输出，不代表招聘效果。", ["Internal verification: show/19-Demo实机验收记录.md"]);
   }
 
   // 14 close

@@ -628,8 +628,8 @@ http://host.docker.internal:3100/api/v1/...
 
 ```bash
 mcporter list
-mcporter list campusmatch --schema
-mcporter call campusmatch.get_task_status task_id=demo-s001
+mcporter list mcp-campusmatch --schema
+timeout 15s mcporter call mcp-campusmatch.get_task_status task_id:demo-s001
 ```
 
 6. 至少真实调用一个工具并验证响应；失败时不得继续推送给 Worker。

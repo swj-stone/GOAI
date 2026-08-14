@@ -6,6 +6,6 @@ assign_when: The Worker is responsible for Coach Agent tasks in CampusMatch.
 
 # Generate grounded coaching
 
-After Match completes, call `campusmatch.generate_coaching` with `schema_version=1.0`, the assigned `task_id`, and a stable `idempotency_key`.
+After Match completes, call `mcp-campusmatch.generate_coaching` with the assigned `task_id` and a stable `idempotency_key`.
 
 Every resume suggestion must carry evidence references. Preserve responsibility boundaries. Separate evidence-building actions from learning actions. Send the complete structured draft to Audit; never offer an unaudited draft as export-ready.

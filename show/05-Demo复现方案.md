@@ -1,226 +1,236 @@
-# CampusMatch 简单 Demo 复现方案
+# CampusMatch Demo 完整复现方案
 
-## 1. Demo 目标
+## 1. 复现目标与边界
 
-用一条 3–5 分钟的任务链证明以下能力，而不是追求完整招聘平台：
+本 Demo 用一条 3–5 分钟的真实任务链证明：材料可追溯、岗位可解释、建议不虚构、风险条件被隔离、导出受人工审批控制，以及同一业务能力可由 HiClaw 多 Agent 调用。
 
-1. 多 Agent 有明确分工和结构化交接。
-2. 学生能力与岗位结论可以回到原文证据。
-3. 匹配度与判断置信度分开展示。
-4. Coach 不得虚构经历，Audit 能阻止无证据输出。
-5. 高风险结果进入人工审批并留下 Trace。
+它不是招聘网站，也不做自动录用、淘汰或候选人排名。匹配度只表示“当前材料对当前 JD 的证据覆盖”，`NO_EVIDENCE` 只表示材料中未找到证据。
 
-## 2. 双模式复现
+## 2. 角色与运行位置
 
-### 2.1 离线确定性模式（初赛优先）
-
-不需要模型 API。文档解析、画像和岗位输出使用固定夹具，匹配算法和 Audit 使用确定性规则，保证评委可以稳定复现。
-
-适合：初赛材料演示、没有云额度、网络不稳定、回归测试。
-
-### 2.2 在线 Agent 模式（入围后）
-
-使用 AgentTeams Manager–Workers 实际编排，模型负责抽取和建议，所有输出经过 JSON Schema、证据引用和 Audit 门禁。
-
-适合：复赛代码包、现场 Agent 协同、Element 房间观察与人工介入。
-
-## 3. 建议目录结构
-
-```text
-campusmatch/
-├─ README.md
-├─ LICENSE
-├─ .env.example
-├─ docker-compose.yml
-├─ app/
-│  ├─ ui/                    # Streamlit 或轻量 Web UI
-│  ├─ orchestrator/          # 离线编排适配器 / AgentTeams bridge
-│  ├─ schemas/               # JSON Schema
-│  └─ observability/         # JSONL / OpenTelemetry
-├─ agents/
-│  ├─ career-navigator/
-│  ├─ profile-agent/
-│  ├─ job-agent/
-│  ├─ match-agent/
-│  ├─ coach-agent/
-│  └─ audit-agent/
-├─ skills/
-│  ├─ document-to-markdown/
-│  ├─ resume-evidence-extraction/
-│  ├─ jd-normalization/
-│  ├─ evidence-based-match/
-│  ├─ grounded-resume-review/
-│  └─ claim-grounding-audit/
-├─ fixtures/
-│  ├─ students/
-│  ├─ jobs/
-│  ├─ policies/
-│  └─ expected/
-├─ artifacts/                # 运行产物，不提交真实个人信息
-├─ traces/
-└─ tests/
-```
-
-## 4. 固定样例数据
-
-### 4.1 学生 S001（合成）
-
-```markdown
-# 陈同学（合成人物）
-
-## 教育经历
-某高校信息管理专业，本科三年级。
-
-## 课程
-Python 程序设计、数据库原理、统计学、数据可视化。
-
-## 项目
-校园消费数据分析：使用 Python/pandas 清洗 8,000 条合成数据，使用 SQL 完成分组统计，并制作可视化报告。本人负责数据清洗与图表制作。
-
-## 求职偏好
-数据分析实习；上海或杭州；每周可实习四天。
-```
-
-### 4.2 岗位 J001（合成）
-
-```json
-{
-  "title": "数据分析实习生",
-  "city": "上海",
-  "requirements": [
-    "熟悉 SQL 和 Python",
-    "能使用 Excel 完成数据整理",
-    "具备清晰的数据表达能力",
-    "有 BI 工具经验者优先"
-  ]
-}
-```
-
-### 4.3 风险岗位 J004（合成）
-
-固定测试中加入一条与岗位职责无关的性别偏好。Job/Audit 必须将其标记为 `POLICY_EXCLUDED`，不展示为学生能力缺口，也不计入匹配分。
-
-### 4.4 幻觉注入
-
-测试用 Coach 草稿加入：
-
-> 通过项目将数据处理效率提升 30%。
-
-学生材料没有这个数字。Audit 必须返回 `UNGROUNDED_NUMERIC_CLAIM` 并阻止导出。
-
-## 5. 预期任务链
-
-```text
-1. Career Navigator 创建 task-001，记录同意范围
-2. Profile Agent 生成 Markdown 和 4 条能力证据
-3. Job Agent 规范化 5 个岗位，隔离 1 条风险条件
-4. Match Agent 输出前三岗位和逐项证据矩阵
-5. Coach Agent 生成简历/学习/面试建议
-6. Audit Agent 发现无证据“提升 30%”，任务进入 BLOCKED
-7. 用户删除虚构数字，Coach 重新生成
-8. Audit PASS，老师点击批准
-9. 系统导出 Markdown/PDF 和完整 Trace
-```
-
-## 6. 界面最小实现
-
-只需要四个页面：
-
-### 页面 A：材料与目标
-
-- 选择“应届求职”模式。
-- 上传/选择固定简历。
-- 勾选授权范围。
-- 输入城市、岗位方向和时间约束。
-
-### 页面 B：证据化画像
-
-- 左侧显示带行号 Markdown。
-- 右侧显示能力列表。
-- 点击能力跳转到对应原文。
-- 允许用户确认、纠正或标记缺失。
-
-### 页面 C：匹配报告
-
-- 总体环形图和独立置信度。
-- 五维雷达图。
-- 岗位要求证据矩阵。
-- Coach 的行动计划和一个模拟面试入口。
-
-### 页面 D：审计与 Trace
-
-- 展示虚构、隐私、歧视和证据覆盖检查。
-- 展示 BLOCK → 修复 → PASS 的状态变化。
-- 人工批准后出现导出按钮。
-
-## 7. 可视化样例数据
-
-```json
-{
-  "fit_score": 76,
-  "confidence": 82,
-  "radar": {
-    "专业技能": 80,
-    "项目经历": 70,
-    "工具能力": 85,
-    "协作表达": 65,
-    "岗位偏好": 78
-  },
-  "requirements": [
-    {"name": "Python", "state": "MATCH", "evidence": "resume:L10-L11"},
-    {"name": "SQL", "state": "MATCH", "evidence": "resume:L10-L11"},
-    {"name": "Excel", "state": "PARTIAL", "evidence": "course:L6"},
-    {"name": "BI 工具", "state": "NO_EVIDENCE", "evidence": null}
-  ]
-}
-```
-
-上述数字是合成演示数据，不是模型实测准确率，也不是录用概率。
-
-## 8. AgentTeams 实现映射
-
-AgentTeams 官方项目当前提供 Manager–Workers、Matrix 协作、共享文件、Higress 网关和人工介入能力。建议复赛锁定明确版本并在 README 中记录镜像与安装方式。[AgentTeams 官方仓库](https://github.com/agentscope-ai/AgentTeams)
-
-| CampusMatch 组件 | AgentTeams 映射 |
-|---|---|
-| Career Navigator | Manager |
-| Profile/Job/Match/Coach/Audit | Workers |
-| 任务链 | Manager 任务拆解＋Team Rooms |
-| 文档和 JSON | Shared File System / MinIO |
-| 人工观察与纠正 | Element/Matrix 房间 |
-| 模型与 MCP 凭据 | Higress Gateway |
-| Skill 分发 | Worker Skills / Nacos Registry 规划 |
-| Trace | Matrix 事件＋应用 Trace＋AgentLoop/SLS 规划 |
-
-## 9. 离线验收用例
-
-| 编号 | 输入 | 预期 |
+| 角色 | 需要做什么 | 是否需要 Python |
 |---|---|---|
-| T01 | 正常简历＋正常 JD | 生成带证据匹配报告 |
-| T02 | 扫描 PDF 解析失败 | 状态 `NEEDS_INPUT`，不生成假画像 |
-| T03 | 简历未提 BI | 标记 `NO_EVIDENCE`，不写“不会 BI” |
-| T04 | JD 含风险性别条件 | 标记 `POLICY_EXCLUDED`，不计分 |
-| T05 | Coach 注入“提升 30%” | Audit `BLOCK`，不能导出 |
-| T06 | 用户补充新经历但未确认 | 进入候选证据，不写回正式画像 |
-| T07 | 导出前无人工审批 | 返回 `APPROVAL_REQUIRED` |
-| T08 | 同一导出请求重复发送 | 幂等，只产生一个产物 |
+| 学生/评委 | 打开浏览器、上传材料、查看结果、人工确认、下载报告 | 否 |
+| Demo 维护者 | 安装依赖、启动本机服务、运行测试 | 是，使用项目根目录 `venv` |
+| HiClaw | 通过网关/MCP 调用本机 CampusMatch API | 否，无需在 Worker 内安装 Python |
 
-## 10. Demo 讲解脚本
+Python 只用于搭建后端，不是最终用户的使用门槛。
 
-1. “这不是替学生编简历的聊天机器人，而是高校可审计的求职任务闭环。”
-2. 上传合成简历，展示原文件、Markdown 和证据对象。
-3. 展示推荐岗位，但强调匹配度不是录用概率。
-4. 点击 Python 能力，回到项目原文。
-5. 展示风险 JD 条件被隔离。
-6. 展示 Coach 的无证据数字被 Audit 拦截。
-7. 人工确认修复版本，导出报告与 Trace。
-8. 打开 AgentTeams/Element，说明 Manager–Workers 协作和人工介入映射。
+## 3. 软件结构
 
-## 11. 复现验收标准
+```text
+GOAI/
+├─ requirements.txt
+├─ venv/
+├─ demo/
+│  ├─ README.md
+│  ├─ src/campusmatch/
+│  │  ├─ main.py                 # FastAPI、静态页面和工具接口
+│  │  ├─ contracts.py            # Pydantic 数据契约
+│  │  ├─ workflow.py             # Profile→Job→Match→Coach→Audit
+│  │  ├─ services/               # 确定性业务规则与报告导出
+│  │  └─ static/                 # 无框架浏览器界面
+│  ├─ tests/                     # 单元、契约、API、安全门禁测试
+│  ├─ fixtures/                  # 合成学生与岗位样例
+│  ├─ agentteams/                # MCP、Skills、Souls 和容器脚本
+│  └─ scripts/                   # Windows 启动与 HiClaw 配置脚本
+└─ show/                         # 初赛材料、PPT 和验收记录
+```
 
-- README 中一条命令启动离线 Demo。
-- 不配置 API Key 也能完成固定任务链。
-- 运行后生成 `report.md`、`audit.json`、`trace.jsonl`。
-- 所有重要结论可找到有效 `evidence_ref`。
-- 安全用例 T04/T05/T07 必须稳定通过。
-- 若在线模型失败，系统明确降级，不把失败结果当作成功。
+## 4. 浏览器 Demo 复现
+
+### 4.1 首次准备
+
+在项目根目录执行：
+
+```powershell
+.\venv\Scripts\Activate.ps1
+python -m pip install -r requirements.txt
+python -m pip check
+python -m pytest demo\tests -q
+```
+
+如果 PowerShell 阻止激活脚本，可直接使用虚拟环境解释器：
+
+```powershell
+.\venv\Scripts\python.exe -m pip install -r requirements.txt
+.\venv\Scripts\python.exe -m pytest demo\tests -q
+```
+
+### 4.2 启动
+
+```powershell
+.\demo\scripts\start-demo.ps1
+```
+
+检查健康状态：
+
+```powershell
+Invoke-RestMethod http://127.0.0.1:3100/api/health
+```
+
+预期返回包含 `status: ok`。浏览器打开 `http://127.0.0.1:3100`。
+
+### 4.3 最短演示路径
+
+1. 点击“载入合成案例”。
+2. 确认模式为“应届/实习求职”，授权框已勾选。
+3. 点击“开始证据化分析”。
+4. 展示两个环形指标：匹配度 77、证据覆盖度 85。
+5. 展示每项要求的“符合／部分符合／缺少证据”，点击或口述证据行号。
+6. 展示“女性优先”风险条件被标记为 `POLICY_EXCLUDED`，未进入分数。
+7. 展示 Audit 为 `BLOCK`，导出按钮不可用。
+8. 勾选“我已检查并批准本次导出”，点击“提交审计”。
+9. Audit 变为 `PASS`，点击导出 Markdown 报告。
+
+### 4.4 自有材料路径
+
+- 支持 `.md`、`.txt`、`.docx`、可提取文本的 `.pdf`。
+- 单文件最大 5 MiB。
+- 上传后先显示 Markdown，用户可直接修正文本再分析。
+- 扫描 PDF 暂无 OCR，返回 `PDF_TEXT_NOT_FOUND`，用户可改传 DOCX/TXT 或手动粘贴。
+- 不支持的扩展名返回结构化错误，不进入分析链。
+
+## 5. 确定性合成案例
+
+样例文件：
+
+- 学生材料：`demo/fixtures/student-materials.md`
+- 岗位 JD：`demo/fixtures/job-general-operations.md`
+
+合成人物“林晓雨”只有课程小组汇报、社团报名与志愿服务经历。系统可从原文提取沟通表达、文档写作、办公与信息处理、活动执行与协作四类能力，并保留逐条证据。
+
+岗位为“综合运营实习生”，包含办公软件、沟通、活动支持等要求，并故意加入与职责无关的性别条件。固定预期为：
+
+```json
+{
+  "match_score": 77,
+  "evidence_coverage": 85,
+  "policy_condition": "POLICY_EXCLUDED",
+  "audit_before_approval": "BLOCK",
+  "audit_after_approval": "PASS",
+  "final_status": "READY"
+}
+```
+
+固定结果用于回归与现场稳定演示，不代表录用概率。
+
+## 6. 五个业务 Agent 与通用编排
+
+| Agent | 输入 | 输出 | 不允许做的事 |
+|---|---|---|---|
+| Profile | 用户 Markdown | 能力、证据、行号 | 无证据推断能力 |
+| Job | JD Markdown、使用模式 | 硬性/加分/职责/风险条件 | 把歧视条件当作正常要求 |
+| Match | Profile + Job | 分数、覆盖度、逐项状态、五维值 | 只给黑盒分数 |
+| Coach | 真实材料、匹配缺口 | 简历、学习、面试建议 | 虚构经历、数字或技能 |
+| Audit | 全部阶段输出、人工批准状态 | PASS/BLOCK、风险项、导出门禁 | 绕过人工批准 |
+| Career Navigator | 用户目标与阶段状态 | 共情说明、编排、重试、人工交接 | 作出招聘决定或诊断心理疾病 |
+
+情绪支持采用分级策略：一般低落提供支持和可执行小步骤；疑似危机只提示寻求现实支持与本地紧急帮助，不进行医学诊断。紧急号码必须按用户所在地动态确认，不能把单一地区号码硬编码为全球适用。
+
+## 7. HiClaw MCP 复现
+
+前提：`agentteams-manager`、`agentteams-controller` 和六个 `agentteams-worker-*` 容器在线，本机 Demo 正在运行。
+
+### 7.1 注册 MCP
+
+```powershell
+.\demo\scripts\register-hiclaw.ps1
+```
+
+脚本注册实际服务名 `mcp-campusmatch`，随机令牌只写入被 Git 忽略的 `demo/.env.local`。验证：
+
+```powershell
+docker exec agentteams-manager mcporter list mcp-campusmatch --schema
+```
+
+预期发现六个工具：`profile_materials`、`parse_job`、`match_evidence`、`generate_coaching`、`audit_export`、`get_task_status`。
+
+### 7.2 配置 Worker 与 Skill
+
+```powershell
+.\demo\scripts\configure-worker-mcp.ps1
+.\demo\scripts\sync-worker-skills.ps1
+```
+
+第一条命令使用每个 Worker 已有的网关身份生成本地 `mcporter` 配置；第二条命令运行官方 Skill 推送并做容器兼容同步，最后比较 SHA-256。预期六个 Worker 均显示 `MCP_HEALTHY` 和 `SYNCED`。
+
+### 7.3 六阶段 MCP 烟雾测试
+
+```powershell
+.\demo\scripts\smoke-hiclaw.ps1 -TaskId smoke-campusmatch-001
+```
+
+预期输出：
+
+```text
+profile PASS
+job PASS
+match_score 77
+evidence_coverage 85
+audit_gate [BLOCK,PASS]
+final_status READY
+```
+
+此测试不依赖模型推理，专门验证网关、MCP、Schema、幂等键和业务 API。
+
+### 7.4 真实 Agent Team 委派
+
+```powershell
+.\demo\scripts\delegate-team-smoke.ps1 -TaskId team-live-001
+```
+
+编排顺序：
+
+```text
+Career Navigator
+  ├─ Profile Agent ─┐
+  └─ Job Agent ─────┴─> Match Agent -> Coach Agent -> Audit Agent
+```
+
+Profile 与 Job 可以并行；后续阶段必须读取同一 `task_id` 的已完成状态。Team Room 消息、Worker 日志、共享任务文件和 MCP 状态共同构成可回放 Trace。
+
+查询业务状态：
+
+```powershell
+docker exec agentteams-manager bash -lc "source /opt/hiclaw/scripts/gateway-api.sh >/dev/null 2>&1; timeout 15s mcporter call mcp-campusmatch.get_task_status task_id:team-live-001 --output json"
+```
+
+## 8. 审计和失败处理
+
+| 场景 | 预期行为 | 是否可导出 |
+|---|---|---|
+| 材料没有某技能证据 | 标记 `NO_EVIDENCE`，不写“用户不会” | 视其他审计项决定 |
+| JD 含年龄/性别等无关条件 | `POLICY_EXCLUDED`，不计分 | 可继续，但保留风险记录 |
+| Coach 写入无依据数字 | `UNGROUNDED_*`，Audit `BLOCK` | 否 |
+| 未人工批准 | `APPROVAL_REQUIRED`，Audit `BLOCK` | 否 |
+| 扫描 PDF 无文本层 | `PDF_TEXT_NOT_FOUND`，要求补充材料 | 否 |
+| MCP/Worker 暂时失败 | 保留 task_id，使用幂等键重试 | 否，直到阶段完整 |
+| 服务重启 | 内存任务状态清空，需重新运行 | 旧任务不可导出 |
+
+## 9. 最低验收标准
+
+必须同时满足：
+
+1. `python -m pip check` 无依赖冲突。
+2. 全部自动化测试通过。
+3. `/api/health` 返回成功。
+4. 合成案例稳定得到 77/85。
+5. Profile 每项能力都能回到原文证据。
+6. 风险条件不参与匹配。
+7. 未审批不能导出，审批后能够导出。
+8. 浏览器桌面端和 390px 移动端无横向溢出，控制台无错误。
+9. Manager 和六个 Worker 都能发现 `mcp-campusmatch`。
+10. MCP 烟雾测试通过；真实 Team 至少完成五个专业阶段并留下结果。
+
+## 10. 生产化前必须补齐
+
+- 数据库和对象存储持久化；
+- 用户账号、最小权限和学校组织隔离；
+- 数据加密、留存期限、撤回同意和删除；
+- OCR、恶意文件检测和上传隔离；
+- 模型输出 Schema 校验、超时、重试、熔断和成本限制；
+- 公平性、证据一致性、不同专业覆盖率和人工复核评测；
+- 根据部署地区复核就业、个人信息、反歧视和心理危机提示的法律合规性。
+
+因此，当前 Demo 的正确表述是“可运行、可复现的本地 MVP 与 Agent Infra 证明”，不是“已上线的自动招聘系统”。

@@ -1,4 +1,4 @@
-from typing import Literal
+from typing import Annotated, Literal
 
 from pydantic import BaseModel, Field, model_validator
 
@@ -13,6 +13,14 @@ MatchState = Literal[
     "GAP",
     "CONFLICT",
     "POLICY_EXCLUDED",
+]
+TaskId = Annotated[
+    str,
+    Field(
+        min_length=1,
+        max_length=100,
+        pattern=r"^[A-Za-z0-9][A-Za-z0-9._-]{0,99}$",
+    ),
 ]
 
 
@@ -149,8 +157,32 @@ class AuditResult(BaseModel):
     issues: list[AuditIssue]
 
 
+class DocumentConversion(BaseModel):
+    schema_version: Literal["1.0"] = "1.0"
+    filename: str
+    source_format: Literal["md", "txt", "docx", "pdf"]
+    markdown: str
+    char_count: int = Field(ge=1)
+
+
+class TraceEvent(BaseModel):
+    stage: Literal["profile", "job", "match", "coach", "audit"]
+    agent: str
+    status: Literal["COMPLETED"] = "COMPLETED"
+    detail: str
+
+
+class AnalysisRunRequest(BaseModel):
+    task_id: TaskId
+    markdown: str
+    job_markdown: str
+    mode: UserMode = "job_search"
+    consent_granted: bool
+    human_approved: bool = False
+
+
 class DemoRunRequest(BaseModel):
-    task_id: str = "demo-s001"
+    task_id: TaskId = "demo-s001"
     human_approved: bool = False
 
 
@@ -165,12 +197,13 @@ class DemoRunResult(BaseModel):
     match: MatchResult
     coaching: CoachingResult
     audit: AuditResult
+    trace: list[TraceEvent]
 
 
 class ToolRequest(BaseModel):
     schema_version: Literal["1.0"] = "1.0"
-    task_id: str
-    idempotency_key: str
+    task_id: TaskId
+    idempotency_key: str = Field(min_length=1, max_length=200)
 
 
 class ProfileToolRequest(ToolRequest):
