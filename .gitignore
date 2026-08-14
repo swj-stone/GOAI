@@ -1,5 +1,6 @@
 /.venv
 /venv/
+/.worktrees/
 /demo/.pytest_cache/
 /demo/**/__pycache__/
 /demo/.env
