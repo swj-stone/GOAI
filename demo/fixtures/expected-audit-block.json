@@ -1,0 +1,13 @@
+{
+  "schema_version": "1.0",
+  "task_id": "demo-s001",
+  "status": "BLOCK",
+  "export_allowed": false,
+  "issues": [
+    {
+      "code": "UNGROUNDED_NUMERIC_CLAIM",
+      "message": "“提升 30%”没有材料或用户确认支持。",
+      "action": "删除该数字，或补充并确认能够证明该数字的材料。"
+    }
+  ]
+}

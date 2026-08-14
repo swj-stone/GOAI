@@ -1,0 +1,94 @@
+server:
+  name: campusmatch-mcp-server
+  config:
+    accessToken: ""
+
+tools:
+- name: profile_materials
+  description: "Convert authorized Markdown material into a structured capability profile with verbatim evidence and line references."
+  args:
+  - {name: task_id, description: "Shared CampusMatch task ID", type: string, required: true}
+  - {name: idempotency_key, description: "Stable key for safe retries", type: string, required: true}
+  - {name: user_id, description: "Synthetic or consented user ID", type: string, required: true}
+  - {name: source_id, description: "Source material ID", type: string, required: true}
+  - {name: markdown, description: "Complete normalized Markdown material", type: string, required: true}
+  requestTemplate:
+    url: "http://host.docker.internal:3100/api/v1/profile"
+    method: POST
+    headers:
+    - {key: Authorization, value: "Bearer {{.config.accessToken}}"}
+    - {key: Content-Type, value: "application/json"}
+    body: |
+      {"schema_version":"1.0","task_id":{{toJson .args.task_id}},"idempotency_key":{{toJson .args.idempotency_key}},"user_id":{{toJson .args.user_id}},"source_id":{{toJson .args.source_id}},"markdown":{{toJson .args.markdown}}}
+
+- name: parse_job
+  description: "Classify a job description into hard, bonus, ambiguous, and policy-risk requirements."
+  args:
+  - {name: task_id, description: "Shared CampusMatch task ID", type: string, required: true}
+  - {name: idempotency_key, description: "Stable key for safe retries", type: string, required: true}
+  - {name: job_id, description: "Job ID", type: string, required: true}
+  - {name: mode, description: "job_search, career_change, or explore", type: string, required: true}
+  - {name: jd_markdown, description: "Complete job description Markdown", type: string, required: true}
+  requestTemplate:
+    url: "http://host.docker.internal:3100/api/v1/job"
+    method: POST
+    headers:
+    - {key: Authorization, value: "Bearer {{.config.accessToken}}"}
+    - {key: Content-Type, value: "application/json"}
+    body: |
+      {"schema_version":"1.0","task_id":{{toJson .args.task_id}},"idempotency_key":{{toJson .args.idempotency_key}},"job_id":{{toJson .args.job_id}},"mode":{{toJson .args.mode}},"jd_markdown":{{toJson .args.jd_markdown}}}
+
+- name: match_evidence
+  description: "Calculate deterministic evidence match and material coverage for a task with completed Profile and Job stages."
+  args:
+  - {name: task_id, description: "Shared CampusMatch task ID", type: string, required: true}
+  - {name: idempotency_key, description: "Stable key for safe retries", type: string, required: true}
+  requestTemplate:
+    url: "http://host.docker.internal:3100/api/v1/match"
+    method: POST
+    headers:
+    - {key: Authorization, value: "Bearer {{.config.accessToken}}"}
+    - {key: Content-Type, value: "application/json"}
+    body: |
+      {"schema_version":"1.0","task_id":{{toJson .args.task_id}},"idempotency_key":{{toJson .args.idempotency_key}}}
+
+- name: generate_coaching
+  description: "Generate evidence-linked resume wording, evidence or learning actions, and mock interview questions."
+  args:
+  - {name: task_id, description: "Shared CampusMatch task ID", type: string, required: true}
+  - {name: idempotency_key, description: "Stable key for safe retries", type: string, required: true}
+  requestTemplate:
+    url: "http://host.docker.internal:3100/api/v1/coach"
+    method: POST
+    headers:
+    - {key: Authorization, value: "Bearer {{.config.accessToken}}"}
+    - {key: Content-Type, value: "application/json"}
+    body: |
+      {"schema_version":"1.0","task_id":{{toJson .args.task_id}},"idempotency_key":{{toJson .args.idempotency_key}}}
+
+- name: audit_export
+  description: "Audit grounded claims, privacy, fairness, trace, consent, and human approval before export."
+  args:
+  - {name: task_id, description: "Shared CampusMatch task ID", type: string, required: true}
+  - {name: idempotency_key, description: "Stable key for safe retries", type: string, required: true}
+  - {name: consent_granted, description: "Whether user consent is valid", type: boolean, required: true}
+  - {name: trace_present, description: "Whether execution trace exists", type: boolean, required: true}
+  - {name: human_approved, description: "Whether the final draft has human approval", type: boolean, required: true}
+  requestTemplate:
+    url: "http://host.docker.internal:3100/api/v1/audit"
+    method: POST
+    headers:
+    - {key: Authorization, value: "Bearer {{.config.accessToken}}"}
+    - {key: Content-Type, value: "application/json"}
+    body: |
+      {"schema_version":"1.0","task_id":{{toJson .args.task_id}},"idempotency_key":{{toJson .args.idempotency_key}},"consent_granted":{{toJson .args.consent_granted}},"trace_present":{{toJson .args.trace_present}},"human_approved":{{toJson .args.human_approved}}}
+
+- name: get_task_status
+  description: "Get completed CampusMatch stages and task readiness."
+  args:
+  - {name: task_id, description: "Shared CampusMatch task ID", type: string, required: true}
+  requestTemplate:
+    url: "http://host.docker.internal:3100/api/v1/tasks/{{.args.task_id}}"
+    method: GET
+    headers:
+    - {key: Authorization, value: "Bearer {{.config.accessToken}}"}

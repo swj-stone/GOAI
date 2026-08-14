@@ -1,0 +1,77 @@
+{
+  "schema_version": "1.0",
+  "user_id": "S001",
+  "evidence": [
+    {
+      "evidence_id": "E-S001-001",
+      "source_id": "student-materials",
+      "source_type": "course",
+      "line_start": 4,
+      "line_end": 4,
+      "quote": "在课程小组汇报中，我负责协调 5 人分工，整理汇报提纲，并完成课堂展示。",
+      "confirmed_by_user": true
+    },
+    {
+      "evidence_id": "E-S001-002",
+      "source_id": "student-materials",
+      "source_type": "course",
+      "line_start": 5,
+      "line_end": 5,
+      "quote": "我使用 Word 整理提纲，使用 PowerPoint 制作展示页面。",
+      "confirmed_by_user": true
+    },
+    {
+      "evidence_id": "E-S001-003",
+      "source_id": "student-materials",
+      "source_type": "club",
+      "line_start": 8,
+      "line_end": 8,
+      "quote": "我使用 Excel 维护活动报名名单，核对参与者信息。",
+      "confirmed_by_user": true
+    },
+    {
+      "evidence_id": "E-S001-004",
+      "source_id": "student-materials",
+      "source_type": "club",
+      "line_start": 9,
+      "line_end": 9,
+      "quote": "我协助发布报名通知、答复同学问题，并在现场完成签到支持。",
+      "confirmed_by_user": true
+    },
+    {
+      "evidence_id": "E-S001-005",
+      "source_id": "student-materials",
+      "source_type": "volunteer",
+      "line_start": 12,
+      "line_end": 12,
+      "quote": "我负责访客引导和信息解答，并在人员变化时协助调整临时排班。",
+      "confirmed_by_user": true
+    }
+  ],
+  "competencies": [
+    {
+      "competency_id": "C-COMMUNICATION",
+      "label": "沟通表达",
+      "evidence_refs": ["E-S001-001", "E-S001-005"],
+      "evidence_strength": "direct"
+    },
+    {
+      "competency_id": "C-WRITING",
+      "label": "文档写作",
+      "evidence_refs": ["E-S001-001", "E-S001-002"],
+      "evidence_strength": "related"
+    },
+    {
+      "competency_id": "C-OFFICE",
+      "label": "办公与信息处理",
+      "evidence_refs": ["E-S001-003"],
+      "evidence_strength": "direct"
+    },
+    {
+      "competency_id": "C-ACTIVITY",
+      "label": "活动执行与协作",
+      "evidence_refs": ["E-S001-003", "E-S001-004", "E-S001-005"],
+      "evidence_strength": "direct"
+    }
+  ]
+}

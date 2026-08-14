@@ -1,6 +1,6 @@
 # CampusMatch Demo 实现计划（HiClaw 实机版）
 
-> 执行说明：本计划面向当前电脑上的 HiClaw／AgentTeams 环境。后端采用 Python/FastAPI，但普通用户只使用网页，不接触 Python、命令行、提示词或 API Key。执行时按任务顺序推进，每个任务先写测试、再实现、最后提交。未经确认，不创建 Worker、Team，不修改网关配置。
+> 执行说明：本计划面向当前电脑上的 HiClaw／AgentTeams 环境。后端采用 Python/FastAPI，统一使用项目根目录的 `venv` 和 `requirements.txt`；普通用户只使用网页，不接触 Python、命令行、提示词或 API Key。执行时按任务顺序推进，每个任务先写测试、再实现、最后提交。未经确认，不创建 Worker、Team，不修改网关配置。
 
 ## 1. 目标与完成定义
 
@@ -20,7 +20,7 @@
 
 以下条件全部满足才算 Demo 完成：
 
-- 双击启动脚本后，浏览器访问 `http://127.0.0.1:3100` 可完成四步流程；首次部署由开发者创建项目专属 `.venv`。
+- 双击启动脚本后，浏览器访问 `http://127.0.0.1:3100` 可完成四步流程；首次部署由开发者创建项目根目录 `venv`。
 - 未配置模型 API 时，固定合成案例仍可稳定得到 77 分匹配度和 85% 材料覆盖度。
 - 每个能力结论都有 `evidence_ref`、原文摘录和行号。
 - “女性优先”被标记为 `POLICY_EXCLUDED`，不进入分子和分母。
@@ -42,7 +42,7 @@
 | AgentTeams 资源 | 0 Worker / 0 Team | 需要创建 CampusMatch 专用团队 |
 | 默认 Worker Runtime | `openclaw` | 与本机 Node.js 路线一致 |
 | Node.js | v24.15.0 | 可用于前端辅助，但不是本轮后端的必需运行时 |
-| Python | 当前终端未加入 PATH | 从用户已有解释器中选择 Python 3.11/3.12，并在 `demo/.venv` 隔离依赖 |
+| Python | `venv` 为 Python 3.13.9 | 使用 `venv/Scripts/python.exe`，依赖统一记录在根目录 `requirements.txt` |
 | 容器访问主机 | `host.docker.internal` 可解析 | Worker 可调用 Windows 上的 Demo API |
 
 说明：学生用户只会接触 `3100` 端口的网页；`18001`、`18080`、`18088` 和 `18888` 属于管理员或答辩展示入口。Python 只运行在开发者电脑或服务器上，不要求学生安装。
@@ -77,13 +77,12 @@ HiClaw / AgentTeams ─ Career Navigator ─ 五个专业 Workers
 
 ## 4. 代码和数据目录
 
-执行后新增以下目录；不改动用户现有的 `requirements.txt`：
+执行后新增以下目录，并维护项目根目录的 `requirements.txt` 作为唯一依赖清单：
 
 ```text
 demo/
 ├─ README.md
 ├─ pyproject.toml
-├─ requirements.lock
 ├─ .env.example
 ├─ config/
 │  ├─ competency-catalog.json
@@ -245,7 +244,7 @@ coverage = Σ(存在有效证据的合法要求权重)
 2. 在 `.gitignore` 中加入：
 
 ```gitignore
-demo/.venv/
+/venv/
 demo/.pytest_cache/
 demo/**/__pycache__/
 demo/.env
@@ -288,6 +287,7 @@ git commit -m "chore: scaffold CampusMatch demo"
 **涉及文件**
 
 - 新增：`demo/pyproject.toml`
+- 修改：`requirements.txt`
 - 新增：`demo/src/campusmatch/__init__.py`
 - 新增：`demo/src/campusmatch/main.py`
 - 新增：`demo/tests/test_api.py`
@@ -295,17 +295,15 @@ git commit -m "chore: scaffold CampusMatch demo"
 
 **步骤**
 
-1. 从用户已有解释器中选择 Python 3.11 或 3.12 的 64 位版本。不要依赖全局 `PATH`，将解释器绝对路径保存在当前 PowerShell 变量中：
+1. 使用用户已经创建的 Python 3.13.9 虚拟环境，不依赖全局 `PATH`：
 
 ```powershell
-$CampusPython = '用户确认的 python.exe 绝对路径'
-& $CampusPython --version
-& $CampusPython -m venv .venv
-& .\.venv\Scripts\python.exe -m pip install --upgrade pip
-& .\.venv\Scripts\python.exe -m pip install -e ".[dev]"
+.\venv\Scripts\python.exe --version
+.\venv\Scripts\python.exe -m pip install -r requirements.txt
+.\venv\Scripts\python.exe -m pip check
 ```
 
-`pyproject.toml` 声明 FastAPI、Uvicorn、Pydantic、python-multipart、python-docx、pypdf 等运行依赖，以及 pytest、httpx 等开发依赖。安装验证通过后生成 `requirements.lock`，用于冻结实际版本。
+根目录 `requirements.txt` 记录 FastAPI、Uvicorn、Pydantic、python-multipart、python-docx、pypdf、pytest 和 httpx 的兼容版本；`pyproject.toml` 只负责包结构与 pytest 配置，避免维护两份依赖来源。
 
 2. 先写失败测试，要求 `GET /api/health` 返回：
 
@@ -316,7 +314,7 @@ $CampusPython = '用户确认的 python.exe 绝对路径'
 3. 运行并确认失败：
 
 ```powershell
-.\.venv\Scripts\python.exe -m pytest tests/test_api.py -k health -q
+.\venv\Scripts\python.exe -m pytest demo/tests/test_api.py -k health -q
 ```
 
 4. 实现最小 FastAPI 应用。`main.py` 导出 `app`，由 Uvicorn 启动，也供测试通过 `TestClient` 直接调用。
@@ -324,18 +322,18 @@ $CampusPython = '用户确认的 python.exe 绝对路径'
 6. 再运行：
 
 ```powershell
-.\.venv\Scripts\python.exe -m pytest -q
+.\venv\Scripts\python.exe -m pytest demo/tests -q
 powershell -ExecutionPolicy Bypass -File scripts/preflight.ps1
 ```
 
 7. 提交：
 
 ```powershell
-git add demo/pyproject.toml demo/requirements.lock demo/src demo/tests/test_api.py demo/scripts/preflight.ps1
+git add requirements.txt demo/pyproject.toml demo/src demo/tests/test_api.py demo/scripts/preflight.ps1
 git commit -m "feat: add CampusMatch web service baseline"
 ```
 
-**验收**：依赖只安装在 `demo/.venv`；学生页面无需 Python 操作；健康检查在 1 秒内返回；HiClaw 关闭时仍能启动离线 Demo。
+**验收**：依赖只安装在根目录 `venv` 且全部记录在根目录 `requirements.txt`；学生页面无需 Python 操作；健康检查在 1 秒内返回；HiClaw 关闭时仍能启动离线 Demo。
 
 ### 任务 2：建立合成数据与可验证契约
 
@@ -360,14 +358,14 @@ git commit -m "feat: add CampusMatch web service baseline"
 3. 运行并确认失败：
 
 ```powershell
-.\.venv\Scripts\python.exe -m pytest tests/test_contracts.py -q
+.\venv\Scripts\python.exe -m pytest demo/tests/test_contracts.py -q
 ```
 
 4. 使用 Pydantic 实现输入、输出和状态枚举校验；所有 API 返回 `schema_version: "1.0"`。
 5. 运行：
 
 ```powershell
-.\.venv\Scripts\python.exe -m pytest -q
+.\venv\Scripts\python.exe -m pytest demo/tests -q
 ```
 
 6. 提交：
@@ -400,8 +398,8 @@ git commit -m "feat: define evidence-first data contracts"
 8. 运行：
 
 ```powershell
-.\.venv\Scripts\python.exe -m pytest tests/test_profile.py -q
-.\.venv\Scripts\python.exe -m pytest -q
+.\venv\Scripts\python.exe -m pytest demo/tests/test_profile.py -q
+.\venv\Scripts\python.exe -m pytest demo/tests -q
 ```
 
 9. 提交：
@@ -430,8 +428,8 @@ git commit -m "feat: extract grounded student profile"
 5. 运行：
 
 ```powershell
-.\.venv\Scripts\python.exe -m pytest tests/test_job.py -q
-.\.venv\Scripts\python.exe -m pytest -q
+.\venv\Scripts\python.exe -m pytest demo/tests/test_job.py -q
+.\venv\Scripts\python.exe -m pytest demo/tests -q
 ```
 
 6. 提交：
@@ -472,8 +470,8 @@ assert not any(x.state == "POLICY_EXCLUDED" and x.counted for x in result.items)
 5. 运行：
 
 ```powershell
-.\.venv\Scripts\python.exe -m pytest tests/test_match.py -q
-.\.venv\Scripts\python.exe -m pytest -q
+.\venv\Scripts\python.exe -m pytest demo/tests/test_match.py -q
+.\venv\Scripts\python.exe -m pytest demo/tests -q
 ```
 
 6. 提交：
@@ -510,8 +508,8 @@ git commit -m "feat: calculate explainable evidence match"
 7. 运行：
 
 ```powershell
-.\.venv\Scripts\python.exe -m pytest tests/test_coach_audit.py -q
-.\.venv\Scripts\python.exe -m pytest -q
+.\venv\Scripts\python.exe -m pytest demo/tests/test_coach_audit.py -q
+.\venv\Scripts\python.exe -m pytest demo/tests -q
 ```
 
 8. 提交：
@@ -550,9 +548,9 @@ git commit -m "feat: add grounded coaching and audit gate"
 7. 运行：
 
 ```powershell
-.\.venv\Scripts\python.exe -m pytest tests/test_workflow.py -q
-.\.venv\Scripts\python.exe -m pytest -q
-.\.venv\Scripts\python.exe -m uvicorn campusmatch.main:app --app-dir src --host 0.0.0.0 --port 3100
+.\venv\Scripts\python.exe -m pytest demo/tests/test_workflow.py -q
+.\venv\Scripts\python.exe -m pytest demo/tests -q
+.\venv\Scripts\python.exe -m uvicorn campusmatch.main:app --app-dir demo/src --host 0.0.0.0 --port 3100
 ```
 
 8. 手动验收：键盘可完成流程；125% 缩放无横向溢出；1366×768 能看清主操作；风险不只靠红色表示。
@@ -579,7 +577,7 @@ git commit -m "feat: build accessible four-step demo UI"
 
 1. Trace 采用追加式 JSONL，每条记录至少含：`trace_id`、`task_id`、`actor`、`input_refs`、`output_ref`、`state_before`、`state_after`、`timestamp`、`retry_count`。
 2. 导出产生 `report.md`、`audit.json`、`trace.jsonl`；浏览器打印作为 PDF 演示方式，首版不再安装 PDF 生成器。
-3. `start-demo.ps1` 自动定位 `demo/.venv/Scripts/python.exe`、检查依赖、启动 Uvicorn 并打开浏览器；脚本不得自动读取或上传真实简历。
+3. `start-demo.ps1` 自动定位项目根目录 `venv/Scripts/python.exe`、检查依赖、启动 Uvicorn 并打开浏览器；脚本不得自动读取或上传真实简历。
 4. `verify-demo.ps1` 执行预检、全部测试、固定案例 API 和产物校验，失败时返回非零退出码。
 5. 运行：
 
@@ -727,7 +725,7 @@ git commit -m "feat: define CampusMatch HiClaw agent team"
 5. 运行最终验证：
 
 ```powershell
-.\.venv\Scripts\python.exe -m pytest -q
+.\venv\Scripts\python.exe -m pytest demo/tests -q
 powershell -ExecutionPolicy Bypass -File scripts/verify-demo.ps1
 git diff --check
 git status --short
@@ -747,10 +745,10 @@ git commit -m "test: verify CampusMatch end-to-end demo"
 
 如果今天只投入 2–3 小时，按下面顺序做，不要先做全部 Agent：
 
-1. 完成任务 0–2，用已选 Python 创建 `demo/.venv`，搭好 FastAPI、健康检查、合成数据和契约。
+1. 完成任务 0–2，使用根目录 `venv`，搭好 FastAPI、健康检查、合成数据和契约。
 2. 完成任务 5 的纯函数，让 `77/85` 自动测试先通过。
 3. 做任务 7 的最小页面，先实现“使用演示案例→查看匹配报告”。
-4. 运行 `.\.venv\Scripts\python.exe -m pytest -q` 并在浏览器完整走一遍。
+4. 运行 `.\venv\Scripts\python.exe -m pytest demo/tests -q` 并在浏览器完整走一遍。
 5. 保存截图。此时已经有一个不会因模型失败而中断的演示骨架。
 
 第二天再做文档解析、Coach、Audit；第三天接 HiClaw 和 Element。不要先创建六个空 Worker 再临时决定它们做什么。
@@ -782,7 +780,7 @@ git commit -m "test: verify CampusMatch end-to-end demo"
 
 ## 10. 执行前需要的一次确认
 
-代码任务 0–9 可以在当前项目内实施。Python 只安装到 `demo/.venv`；HiClaw 保持自身 Runtime，不在其容器内手工安装 Python。任务 10 会改变 HiClaw 运行状态，因此创建资源前确认以下推荐配置：
+代码任务 0–9 可以在当前项目内实施。Python 依赖只安装到项目根目录 `venv` 并记录到根目录 `requirements.txt`；HiClaw 保持自身 Runtime，不在其容器内手工安装 Python。任务 10 会改变 HiClaw 运行状态，因此创建资源前确认以下推荐配置：
 
 - Worker 名称：`career-navigator`、`profile-agent`、`job-agent`、`match-agent`、`coach-agent`、`audit-agent`。
 - Runtime：全部使用当前默认 `openclaw`。

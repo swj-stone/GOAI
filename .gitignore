@@ -1,1 +1,11 @@
 /.venv
+/venv/
+/demo/.pytest_cache/
+/demo/**/__pycache__/
+/demo/.env
+/demo/.env.local
+/demo/uploads/
+/demo/artifacts/*
+!/demo/artifacts/.gitkeep
+*.tmp
+~$*.pptx

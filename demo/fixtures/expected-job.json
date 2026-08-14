@@ -1,0 +1,65 @@
+{
+  "schema_version": "1.0",
+  "job_id": "J001",
+  "title": "综合运营实习生",
+  "mode": "job_search",
+  "requirements": [
+    {
+      "requirement_id": "R-COMMUNICATION",
+      "label": "沟通表达",
+      "category": "MUST",
+      "weight": 25,
+      "competency_ids": ["C-COMMUNICATION"],
+      "raw_text": "沟通表达清晰"
+    },
+    {
+      "requirement_id": "R-WRITING",
+      "label": "文档写作",
+      "category": "MUST",
+      "weight": 20,
+      "competency_ids": ["C-WRITING"],
+      "raw_text": "能够完成基础文档写作"
+    },
+    {
+      "requirement_id": "R-OFFICE",
+      "label": "办公与信息处理",
+      "category": "MUST",
+      "weight": 20,
+      "competency_ids": ["C-OFFICE"],
+      "raw_text": "能使用 Excel 完成名单和信息整理"
+    },
+    {
+      "requirement_id": "R-ACTIVITY",
+      "label": "活动执行与协作",
+      "category": "BONUS",
+      "weight": 20,
+      "competency_ids": ["C-ACTIVITY"],
+      "raw_text": "有活动支持经历者优先"
+    },
+    {
+      "requirement_id": "R-CONTENT",
+      "label": "内容与用户意识",
+      "category": "BONUS",
+      "weight": 15,
+      "competency_ids": ["C-CONTENT"],
+      "raw_text": "有内容发布或用户反馈整理经验者优先"
+    },
+    {
+      "requirement_id": "R-RESILIENCE",
+      "label": "抗压能力强、有主人翁意识",
+      "category": "AMBIGUOUS",
+      "weight": 0,
+      "competency_ids": [],
+      "raw_text": "抗压能力强，有主人翁意识",
+      "behavior_question": "请举例说明计划临时变化时，你如何调整任务并与他人沟通。"
+    },
+    {
+      "requirement_id": "R-GENDER",
+      "label": "女性优先",
+      "category": "POLICY_RISK",
+      "weight": 0,
+      "competency_ids": [],
+      "raw_text": "女性优先"
+    }
+  ]
+}

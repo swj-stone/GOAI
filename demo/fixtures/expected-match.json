@@ -1,0 +1,15 @@
+{
+  "schema_version": "1.0",
+  "task_id": "demo-s001",
+  "match_score": 77,
+  "evidence_coverage": 85,
+  "disclaimer": "证据匹配度不是录用概率；缺少证据不等于缺少能力。",
+  "items": [
+    {"requirement_id": "R-COMMUNICATION", "label": "沟通表达", "category": "MUST", "weight": 25, "state": "MATCH", "coefficient": 1.0, "evidence_refs": ["E-S001-001", "E-S001-005"], "reason": "课堂展示和志愿服务答疑提供了直接证据", "counted": true},
+    {"requirement_id": "R-WRITING", "label": "文档写作", "category": "MUST", "weight": 20, "state": "PARTIAL", "coefficient": 0.6, "evidence_refs": ["E-S001-001", "E-S001-002"], "reason": "有提纲和展示材料，但缺少正式运营文案证据", "counted": true},
+    {"requirement_id": "R-OFFICE", "label": "办公与信息处理", "category": "MUST", "weight": 20, "state": "MATCH", "coefficient": 1.0, "evidence_refs": ["E-S001-003"], "reason": "使用 Excel 维护报名名单提供了直接证据", "counted": true},
+    {"requirement_id": "R-ACTIVITY", "label": "活动执行与协作", "category": "BONUS", "weight": 20, "state": "MATCH", "coefficient": 1.0, "evidence_refs": ["E-S001-003", "E-S001-004", "E-S001-005"], "reason": "报名、通知、签到和临时排班经历提供了直接证据", "counted": true},
+    {"requirement_id": "R-CONTENT", "label": "内容与用户意识", "category": "BONUS", "weight": 15, "state": "NO_EVIDENCE", "coefficient": 0.0, "evidence_refs": [], "reason": "当前材料没有公众号、平台内容发布或用户反馈整理证据", "counted": true},
+    {"requirement_id": "R-GENDER", "label": "女性优先", "category": "POLICY_RISK", "weight": 0, "state": "POLICY_EXCLUDED", "coefficient": 0.0, "evidence_refs": [], "reason": "与岗位能力无直接关系，不参与匹配并转人工核查", "counted": false}
+  ]
+}

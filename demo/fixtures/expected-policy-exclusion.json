@@ -1,0 +1,10 @@
+{
+  "schema_version": "1.0",
+  "requirement_id": "R-GENDER",
+  "raw_text": "女性优先",
+  "category": "POLICY_RISK",
+  "match_state": "POLICY_EXCLUDED",
+  "weight": 0,
+  "counted": false,
+  "action": "不参与匹配，转人工确认岗位条件的合规性。"
+}
